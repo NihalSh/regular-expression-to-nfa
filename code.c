@@ -2,22 +2,22 @@
 #include <stdlib.h>
 
 typedef struct {
-	unsigned int max;
+	int max;
 	int top;
 	char *array;
 } Stack;
 
-int initialize(Stack *stack, unsigned int max)
+int initialize(Stack *stack, int max)
 {
 	stack->max = max;
 	stack->top = -1;
-	stack->array = (char*) malloc(max*sizeof(char *));
+	stack->array = (char*) malloc(max*sizeof(char));
 	return 0;
 }
 int push(Stack *stack, char c)
 {
-	if (stack->top < (stack->max - 1)) {
-		stack->top = stack->top + 1;
+	if ((stack->top) < (stack->max - 1)) {
+		stack->top++;
 		stack->array[stack->top] = c;
 		return 0;
 	} else {
@@ -38,6 +38,8 @@ int pop(Stack *stack)
 int main()
 {
 	Stack stack;
-	
+	initialize(&stack, 10);
+	printf("%d, %c, %d, %d\n", stack.top, pop(&stack), stack.top, push(&stack, 'h'));
+	printf("%d, %c\n", stack.top, stack.array[0], pop(&stack));
 	return 0;
 }
