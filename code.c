@@ -18,6 +18,16 @@ typedef struct {
 	char c;
 } InputSymbol;
 
+typedef struct {
+	int id;
+	int * transitions;
+} State;
+
+typedef struct {
+	State start;
+	State final;
+} NFA;
+
 char * getInput();
 
 int main()
