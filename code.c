@@ -40,7 +40,22 @@ typedef struct {
 	char c;
 } InputSymbol;
 
-char * getInput() {
+char * getInput();
+
+int main()
+{
+	char *str = NULL;
+	Stack stack;
+	InputSymbol input_symbols;
+	initialize(&stack, 10);
+
+	str = getInput();
+	printf("%s\n", str);
+	return 0;
+}
+
+char * getInput()
+{
 	char c;
 	char *str = NULL;
 	int lenstr = 0;
@@ -54,16 +69,4 @@ char * getInput() {
 	str[lenstr] = '\0';
 
 	return str;
-}
-
-int main()
-{
-	char *str = NULL;
-	Stack stack;
-	InputSymbol input_symbols;
-	initialize(&stack, 10);
-
-	str = getInput();
-	printf("%s\n", str);
-	return 0;
 }
