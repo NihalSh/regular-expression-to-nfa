@@ -16,7 +16,7 @@ int initialize(Stack *stack, int max)
 }
 int push(Stack *stack, char c)
 {
-	if ((stack->top) < (stack->max - 1)) {
+	if (stack->top < stack->max - 1) {
 		stack->top++;
 		stack->array[stack->top] = c;
 		return 0;
@@ -35,11 +35,35 @@ int pop(Stack *stack)
 	}
 }
 
+typedef struct {
+	int id;
+	char c;
+} InputSymbol;
+
+char * getInput() {
+	char c;
+	char *str = NULL;
+	int lenstr = 0;
+	printf("Regular Expression: ");
+	while ((c = getchar()) != '\n'){
+		lenstr++;
+		str = (char *) realloc(str, sizeof(char)*(lenstr));
+		str[lenstr - 1] = c;
+	}
+	str = (char *) realloc(str, sizeof(char)*(lenstr + 1));
+	str[lenstr] = '\0';
+
+	return str;
+}
+
 int main()
 {
+	char *str = NULL;
 	Stack stack;
+	InputSymbol input_symbols;
 	initialize(&stack, 10);
-	printf("%d, %c, %d, %d\n", stack.top, pop(&stack), stack.top, push(&stack, 'h'));
-	printf("%d, %c\n", stack.top, stack.array[0], pop(&stack));
+
+	str = getInput();
+	printf("%s\n", str);
 	return 0;
 }
