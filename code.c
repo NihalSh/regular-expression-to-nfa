@@ -11,7 +11,7 @@ int initialize(Stack *stack, unsigned int max)
 {
 	stack->max = max;
 	stack->top = -1;
-	stack->array = (char*) malloc(max*sizeof(char *))
+	stack->array = (char*) malloc(max*sizeof(char *));
 	return 0;
 }
 int push(Stack *stack, char c)
@@ -37,5 +37,7 @@ int pop(Stack *stack)
 
 int main()
 {
+	Stack stack;
+	
 	return 0;
 }
