@@ -19,8 +19,6 @@ void * peek(Stack *stack);
 typedef struct {
 	int id;
 	char c;
-
-
 } InputSymbol;
 
 typedef struct {
@@ -29,8 +27,8 @@ typedef struct {
 } State;
 
 typedef struct {
-	State start;
-	State final;
+	State * start;
+	State * final;
 } NFA;
 
 char * getInput();
@@ -39,14 +37,16 @@ int ifInputSymbol(char c);
 
 int prepareInputSymbols(char * str, InputSymbol * symbols);
 
+int pushInputSymbol(char c, Stack * symbolStack, InputSymbol * symbols, State *** states, int * numberStates, int numberInputSymbols);
+
 int main()
 {
 	char *str = NULL;
 	InputSymbol symbols[27];
-	int i;
+	int i, j;
 	int numberInputSymbols;
 
-	State * states = NULL;
+	State ** states = NULL;
 	int numberStates = 0;
 
 	Stack symbolStack;//will hold 'InputSymbol'
@@ -55,19 +55,27 @@ int main()
 	initialize(&opStack, 10);
 	str = getInput();
 	numberInputSymbols = prepareInputSymbols(str, symbols);
-	printf("%d\n", numberInputSymbols);
+
 	for(i = 0; i < strlen(str); i++) {
 		if (ifInputSymbol(str[i])) {
-
+			pushInputSymbol(str[i], &symbolStack, symbols, &states, &numberStates, numberInputSymbols);
 		} else if (opStack.top == -1) {
-
+;
 		} else if (str[i] == '(') {
-
+;
 		} else if (str[i] == ')') {
-
+;
 		} else {
-
+;
 		}
+	}
+
+	for(i = 0; i < numberStates; i++) {
+		printf("%2d", states[i]->id);
+		for(j = 0; j < numberInputSymbols; j++) {
+			printf("\t%2d", states[i]->transitions[j]);
+		}
+		printf("\n");
 	}
 
 	return 0;
@@ -79,10 +87,11 @@ int evaluate(Stack symbolStack, Stack opStack, State * states, int * numberState
 	return 0;
 }
 
-int pushInputSymbol(char c, Stack symbolStack, InputSymbol * symbols, int * numberStates, int numberInputSymbols)
+int pushInputSymbol(char c, Stack * symbolStack, InputSymbol * symbols, State *** states, int * numberStates, int numberInputSymbols)
 {
 	State * s1;
 	State * s2;
+	NFA * n;
 	int i;
 
 	//create state 1
@@ -94,6 +103,10 @@ int pushInputSymbol(char c, Stack symbolStack, InputSymbol * symbols, int * numb
 		s1->transitions[i] = 0;
 	}
 
+	//add state 1 to list of states
+	*states = (State **) realloc(*states, sizeof(State *)*(*numberStates));
+	(*states)[*numberStates-1] = s1;
+
 	//create state 2
 	s2 = (State *) malloc(sizeof(State));
 	*numberStates = *numberStates + 1;
@@ -103,10 +116,21 @@ int pushInputSymbol(char c, Stack symbolStack, InputSymbol * symbols, int * numb
 		s2->transitions[i] = 0;
 	}
 
+	//add state 2 to list of states
+	*states = (State **) realloc(*states, sizeof(State *)*(*numberStates));
+	(*states)[*numberStates-1] = s2;
+
 	//create transition
 	s1->transitions[symbols[c - 96].id] = s2->id;
 	
+	//create NFA
+	n = (NFA *) malloc(sizeof(NFA));
+	n->start = s1;
+	n->final = s2;
+
 	//push NFA
+	push(symbolStack, n);
+
 	return 0;
 }
 
@@ -134,17 +158,18 @@ int prepareInputSymbols(char * str, InputSymbol * symbols)
 	int i = 0;
 	symbols[0].id = 0;
 	symbols[0].c = '0';
-	printf("Input Symbols: \n");
-	printf("\tepsilon -> %d\n", symbols[0].id);
+	printf("%2d", 00);
+	printf("\tepsilon");
 	while(str[i] != '\0') {
 		if(ifInputSymbol(str[i])) {
 			symbols[str[i]-96].id = id;
 			id++;
 			symbols[str[i]-96].c = str[i];
-			printf("\t%c -> %d\n", symbols[str[i]-96].c, symbols[str[i]-96].id);
+			printf("\t%2c", symbols[str[i]-96].c);
 		}
 		i++;
 	}
+	printf("\n");
 	return id;
 }
 
