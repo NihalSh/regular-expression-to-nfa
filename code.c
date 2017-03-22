@@ -25,7 +25,7 @@ typedef struct {
 
 typedef struct {
 	int id;
-	int * transitions;
+	int * transitions;//will store state ids
 } State;
 
 typedef struct {
@@ -55,7 +55,7 @@ int main()
 	initialize(&opStack, 10);
 	str = getInput();
 	numberInputSymbols = prepareInputSymbols(str, symbols);
-	numberInputSymbols++;//one more for epsilon
+	printf("%d\n", numberInputSymbols);
 	for(i = 0; i < strlen(str); i++) {
 		if (ifInputSymbol(str[i])) {
 
@@ -73,9 +73,40 @@ int main()
 	return 0;
 }
 
-int evaluate(Stack symbolStack, Stack opStack)
+int evaluate(Stack symbolStack, Stack opStack, State * states, int * numberStates, int numberInputSymbols)
 {
 
+	return 0;
+}
+
+int pushInputSymbol(char c, Stack symbolStack, InputSymbol * symbols, int * numberStates, int numberInputSymbols)
+{
+	State * s1;
+	State * s2;
+	int i;
+
+	//create state 1
+	s1 = (State *) malloc(sizeof(State));
+	*numberStates = *numberStates + 1;
+	s1->id = *numberStates;
+	s1->transitions = (int *) malloc(numberInputSymbols*sizeof(int));
+	for (i = 0; i < numberInputSymbols; i++) {
+		s1->transitions[i] = 0;
+	}
+
+	//create state 2
+	s2 = (State *) malloc(sizeof(State));
+	*numberStates = *numberStates + 1;
+	s2->id = *numberStates;
+	s2->transitions = (int *) malloc(numberInputSymbols*sizeof(int));
+	for (i = 0; i < numberInputSymbols; i++) {
+		s2->transitions[i] = 0;
+	}
+
+	//create transition
+	s1->transitions[symbols[c - 96].id] = s2->id;
+	
+	//push NFA
 	return 0;
 }
 
@@ -101,16 +132,19 @@ int prepareInputSymbols(char * str, InputSymbol * symbols)
 {
 	int id = 1;
 	int i = 0;
+	symbols[0].id = 0;
+	symbols[0].c = '0';
+	printf("Input Symbols: \n");
+	printf("\tepsilon -> %d\n", symbols[0].id);
 	while(str[i] != '\0') {
 		if(ifInputSymbol(str[i])) {
 			symbols[str[i]-96].id = id;
 			id++;
 			symbols[str[i]-96].c = str[i];
+			printf("\t%c -> %d\n", symbols[str[i]-96].c, symbols[str[i]-96].id);
 		}
 		i++;
 	}
-	symbols[0].id = 0;
-	symbols[0].c = '0';
 	return id;
 }
 
