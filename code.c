@@ -67,9 +67,14 @@ int main()
 			push(opStack, ptr);
 			evaluate(symbolStack, opStack, &states, &numberStates, numberInputSymbols);
 		} else if (str[i] == '(') {
-			;
+			char * ptr = (char *) malloc(sizeof(char));
+			*ptr = str[i];
+			push(opStack, ptr);
 		} else if (str[i] == ')') {
-			;
+			while (*((char *) peek(opStack)) != '(') {
+				evaluate(symbolStack, opStack, &states, &numberStates, numberInputSymbols);
+			}
+			pop(opStack);
 		} else {
 			;
 		}
@@ -82,7 +87,11 @@ int main()
 		}
 		printf("\n");
 	}
-
+	if (symbolStack->top == 0) {
+		NFA * nfa = (NFA *) pop(symbolStack);
+		printf("Start State: %d\n", nfa->start->id);
+		printf("Final State: %d\n", nfa->final->id);
+	}
 	return 0;
 }
 
@@ -111,6 +120,7 @@ int evaluate(Stack * symbolStack, Stack * opStack, State *** states, int * numbe
 	op = (char *)pop(opStack);
 	//printf("%p\n", op);
 	if (*op == '*') {
+		NFA * new = (NFA *) malloc(sizeof(NFA));
 		NFA * n = (NFA *)pop(symbolStack);
 		State * s1;
 		State * s2;
@@ -124,14 +134,24 @@ int evaluate(Stack * symbolStack, Stack * opStack, State *** states, int * numbe
 
 		n->final->transitions[0] = (n->start->id)*100 + s2->id;
 		s1->transitions[0] = (n->start->id)*100 + s2->id;
+		//free memory to avoid leak
+		free(n);
+		n = NULL;
 		//push NFA later
+		new->start = s1;
+		new->final = s2;
+		push(symbolStack, (void *) new);
 	} else if (*op == '.') {
-		//printf("%d\n", symbolStack->top);
 		NFA * n2 = (NFA *)pop(symbolStack);
 		NFA * n1 = (NFA *)pop(symbolStack);
 		n1->final->transitions[0] = n2->start->id;
 		//push NFA later
+		n1->final = n2->final;
+		free(n2);
+		n2 = NULL;
+		push(symbolStack, (void *) n1);
 	} else if (*op == '|') {
+		NFA * new = (NFA *) malloc(sizeof(NFA));
 		NFA * n2 = (NFA *)pop(symbolStack);
 		NFA * n1 = (NFA *)pop(symbolStack);
 		State * s1;
@@ -148,6 +168,9 @@ int evaluate(Stack * symbolStack, Stack * opStack, State *** states, int * numbe
 		n2->final->transitions[0] = s2->id;
 		s1->transitions[0] = (n1->start->id)*100 + n2->start->id;
 		//push NFA later
+		new->start = s1;
+		new->final = s2;
+		push(symbolStack, (void *) new);
 	} 
 
 
