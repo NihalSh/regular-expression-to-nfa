@@ -227,17 +227,23 @@ int ifOperationSymbol(char c)
 int prepareInputSymbols(char * str, InputSymbol * symbols)
 {
 	int id = 1;
-	int i = 0;
+	int i;
+	for (i = 0; i < 27; i++) {
+		symbols[i].id = -1;
+	}
+	i = 0;
 	symbols[0].id = 0;
 	symbols[0].c = '0';
 	printf("%2d", 00);
 	printf("\tepsilon");
 	while(str[i] != '\0') {
 		if(ifInputSymbol(str[i])) {
-			symbols[str[i]-96].id = id;
-			id++;
-			symbols[str[i]-96].c = str[i];
-			printf("\t%2c", symbols[str[i]-96].c);
+			if (symbols[str[i]-96].id == -1) {
+				symbols[str[i]-96].id = id;
+				id++;
+				symbols[str[i]-96].c = str[i];
+				printf("\t%2c", symbols[str[i]-96].c);
+			}
 		}
 		i++;
 	}
