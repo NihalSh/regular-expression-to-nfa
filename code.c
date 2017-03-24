@@ -78,12 +78,18 @@ int main()
 		} else {
 			char * ptr = (char *) malloc(sizeof(char));
 			*ptr = str[i];
-			//check precedence
-			if (*((char *) peek(opStack)) == *ptr) {
-				evaluate(symbolStack, opStack, &states, &numberStates, numberInputSymbols);
+			if (*((char *) peek(opStack)) != '(') {
+				//check precedence
+				if (checkPrecedence(opStack, ptr)) {
+					push(opStack, ptr);
+					evaluate(symbolStack, opStack, &states, &numberStates, numberInputSymbols);
+				} else {
+					evaluate(symbolStack, opStack, &states, &numberStates, numberInputSymbols);
+					push(opStack, ptr);
+				}
+			} else {
 				push(opStack, ptr);
 			}
-			push(opStack, ptr);
 		}
 	}
 
