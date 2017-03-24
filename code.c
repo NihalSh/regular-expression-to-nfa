@@ -289,8 +289,9 @@ char * getInput()
 		str = (char *) realloc(str, sizeof(char)*(lenstr));
 		str[lenstr - 1] = c;
 	}
-	str = (char *) realloc(str, sizeof(char)*(lenstr + 1));
-	str[lenstr] = '\0';
+	str = (char *) realloc(str, sizeof(char)*(lenstr + 2));
+	str[lenstr] = '$';
+	str[lenstr + 1] = '\0';
 
 	return str;
 }
