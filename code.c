@@ -65,7 +65,7 @@ int main()
 			char * ptr = (char *) malloc(sizeof(char));
 			*ptr = str[i];
 			push(opStack, ptr);
-			evaluate(symbolStack, opStack, &states, &numberStates, numberInputSymbols);
+			//evaluate(symbolStack, opStack, &states, &numberStates, numberInputSymbols);
 		} else if (str[i] == '(') {
 			char * ptr = (char *) malloc(sizeof(char));
 			*ptr = str[i];
@@ -76,7 +76,9 @@ int main()
 			}
 			pop(opStack);
 		} else {
-			;
+			char * ptr = (char *) malloc(sizeof(char));
+			*ptr = str[i];
+			push(opStack, ptr);
 		}
 	}
 
