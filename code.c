@@ -78,6 +78,11 @@ int main()
 		} else {
 			char * ptr = (char *) malloc(sizeof(char));
 			*ptr = str[i];
+			//check precedence
+			if (*((char *) peek(opStack)) == *ptr) {
+				evaluate(symbolStack, opStack, &states, &numberStates, numberInputSymbols);
+				push(opStack, ptr);
+			}
 			push(opStack, ptr);
 		}
 	}
@@ -95,6 +100,22 @@ int main()
 		printf("Final State: %d\n", nfa->final->id);
 	}
 	return 0;
+}
+
+int checkPrecedence(Stack * opStack, char *ptr) {
+	if (*ptr == '$') {
+		return 0;
+	} else if (*((char *) peek(opStack)) == *ptr) {
+		return 0;
+	} else if (*((char *) peek(opStack)) == '*') {
+		return 0;
+	} else if (*ptr == '*') {
+		return 1;
+	} else if (*((char *) peek(opStack)) == '|') {
+		return 1;
+	} else if (*ptr == '|') {
+		return 0;
+	}
 }
 
 State * createState(State *** states, int * numberStates, int numberInputSymbols)
