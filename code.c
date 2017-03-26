@@ -8,8 +8,6 @@ typedef struct {
 	void ** array;
 } Stack;
 
-int initialize(Stack *stack, int max);
-
 int push(Stack *stack, void * ptr);
 
 void * pop(Stack *stack);
@@ -51,10 +49,13 @@ int main()
 
 	Stack *symbolStack = (Stack *) malloc(sizeof(Stack));//will hold 'InputSymbol'
 	Stack *opStack = (Stack *) malloc(sizeof(Stack));//will hold 'char'
+
+	symbolStack->top = -1;
+	opStack->top = -1;
 	//printf("stack top: %d\n", symbolStack.top);
 	//printf("stack top: %d\n", symbolStack.top);
-	initialize(symbolStack, 10);
-	initialize(opStack, 10);
+	//initialize(symbolStack, 10);
+	//initialize(opStack, 10);
 	str = getInput();
 	numberInputSymbols = prepareInputSymbols(str, symbols);
 
@@ -296,29 +297,19 @@ char * getInput()
 	return str;
 }
 
-int initialize(Stack *stack, int max)
-{
-	stack->max = max;
-	stack->top = -1;
-	stack->array = (void**) malloc(max*sizeof(void*));
-	return 0;
-}
-
 int push(Stack *stack, void * ptr)
 {
-	if (stack->top < stack->max - 1) {
-		stack->top = stack->top + 1;
-		stack->array[stack->top] = ptr;
-		return 0;
-	} else {
-		return -1;
-	}
+	stack->top = stack->top + 1;
+	stack->array = (void **) realloc(stack->array, (stack->top + 1) * sizeof(void *));
+	stack->array[stack->top] = ptr;
+	return 0;
 }
 
 void * pop(Stack *stack)
 {
 	if (stack->top > -1) {
 		void * ptr = stack->array[stack->top];
+		stack->array = (void **) realloc(stack->array, stack->top * sizeof(void *));
 		stack->top--;
 		return ptr;
 	} else {
