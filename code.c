@@ -3,7 +3,6 @@
 #include <string.h>
 
 typedef struct {
-	int max;
 	int top;
 	void ** array;
 } Stack;
