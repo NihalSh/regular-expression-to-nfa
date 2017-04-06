@@ -2,16 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct {
-	int top;
-	void ** array;
-} Stack;
-
-int push(Stack *stack, void * ptr);
-
-void * pop(Stack *stack);
-
-void * peek(Stack *stack);
+#include "stack.h"
 
 typedef struct {
 	int id;
@@ -48,13 +39,10 @@ int main()
 
 	Stack *symbolStack = (Stack *) malloc(sizeof(Stack));//will hold 'InputSymbol'
 	Stack *opStack = (Stack *) malloc(sizeof(Stack));//will hold 'char'
+	
+	stack_init(symbolStack);
+	stack_init(opStack);
 
-	symbolStack->top = -1;
-	opStack->top = -1;
-	//printf("stack top: %d\n", symbolStack.top);
-	//printf("stack top: %d\n", symbolStack.top);
-	//initialize(symbolStack, 10);
-	//initialize(opStack, 10);
 	str = getInput();
 	numberInputSymbols = prepareInputSymbols(str, symbols);
 
@@ -64,31 +52,32 @@ int main()
 		} else if (opStack->top == -1) {
 			char * ptr = (char *) malloc(sizeof(char));
 			*ptr = str[i];
-			push(opStack, ptr);
+			stack_push(opStack, ptr);
 			//evaluate(symbolStack, opStack, &states, &numberStates, numberInputSymbols);
 		} else if (str[i] == '(') {
 			char * ptr = (char *) malloc(sizeof(char));
 			*ptr = str[i];
-			push(opStack, ptr);
+			stack_push(opStack, ptr);
 		} else if (str[i] == ')') {
-			while (*((char *) peek(opStack)) != '(') {
+			char * ptr = (char *) malloc(sizeof(char));
+			while (*((char *) stack_peek(opStack)) != '(') {
 				evaluate(symbolStack, opStack, &states, &numberStates, numberInputSymbols);
 			}
-			pop(opStack);
+			stack_pop(opStack, (void **) &ptr);
 		} else {
 			char * ptr = (char *) malloc(sizeof(char));
 			*ptr = str[i];
-			if (*((char *) peek(opStack)) != '(') {
+			if (*((char *) stack_peek(opStack)) != '(') {
 				//check precedence
 				if (checkPrecedence(opStack, ptr)) {
-					push(opStack, ptr);
+					stack_push(opStack, ptr);
 					evaluate(symbolStack, opStack, &states, &numberStates, numberInputSymbols);
 				} else {
 					evaluate(symbolStack, opStack, &states, &numberStates, numberInputSymbols);
-					push(opStack, ptr);
+					stack_push(opStack, ptr);
 				}
 			} else {
-				push(opStack, ptr);
+				stack_push(opStack, ptr);
 			}
 		}
 	}
@@ -101,7 +90,8 @@ int main()
 		printf("\n");
 	}
 	if (symbolStack->top == 0) {
-		NFA * nfa = (NFA *) pop(symbolStack);
+		NFA * nfa = NULL;
+		stack_pop(symbolStack, (void **) &nfa);
 		printf("Start State: %d\n", nfa->start->id);
 		printf("Final State: %d\n", nfa->final->id);
 	}
@@ -111,13 +101,13 @@ int main()
 int checkPrecedence(Stack * opStack, char *ptr) {
 	if (*ptr == '$') {
 		return 0;
-	} else if (*((char *) peek(opStack)) == *ptr) {
+	} else if (*((char *) stack_peek(opStack)) == *ptr) {
 		return 0;
-	} else if (*((char *) peek(opStack)) == '*') {
+	} else if (*((char *) stack_peek(opStack)) == '*') {
 		return 0;
 	} else if (*ptr == '*') {
 		return 1;
-	} else if (*((char *) peek(opStack)) == '|') {
+	} else if (*((char *) stack_peek(opStack)) == '|') {
 		return 1;
 	} else if (*ptr == '|') {
 		return 0;
@@ -146,11 +136,12 @@ State * createState(State *** states, int * numberStates, int numberInputSymbols
 int evaluate(Stack * symbolStack, Stack * opStack, State *** states, int * numberStates, int numberInputSymbols)
 {
 	char * op = NULL;
-	op = (char *)pop(opStack);
+	stack_pop(opStack, (void **) &op);
 	//printf("%p\n", op);
 	if (*op == '*') {
 		NFA * new = (NFA *) malloc(sizeof(NFA));
-		NFA * n = (NFA *)pop(symbolStack);
+		NFA * n = NULL;
+		stack_pop(symbolStack, (void **) &n);
 		State * s1;
 		State * s2;
 		int i;
@@ -169,24 +160,28 @@ int evaluate(Stack * symbolStack, Stack * opStack, State *** states, int * numbe
 		//push NFA later
 		new->start = s1;
 		new->final = s2;
-		push(symbolStack, (void *) new);
+		stack_push(symbolStack, (void *) new);
 	} else if (*op == '.') {
-		NFA * n2 = (NFA *)pop(symbolStack);
-		NFA * n1 = (NFA *)pop(symbolStack);
+		NFA * n2 = NULL;
+		NFA * n1 = NULL;
+		stack_pop(symbolStack, (void **) &n2);
+		stack_pop(symbolStack, (void **) &n1);
 		n1->final->transitions[0] = n2->start->id;
 		//push NFA later
 		n1->final = n2->final;
 		free(n2);
 		n2 = NULL;
-		push(symbolStack, (void *) n1);
+		stack_push(symbolStack, (void *) n1);
 	} else if (*op == '|') {
 		NFA * new = (NFA *) malloc(sizeof(NFA));
-		NFA * n2 = (NFA *)pop(symbolStack);
-		NFA * n1 = (NFA *)pop(symbolStack);
+		NFA * n2 = NULL;
+		NFA * n1 = NULL;
 		State * s1;
 		State * s2;
 		int i;
 
+		stack_pop(symbolStack, (void **) &n2);
+		stack_pop(symbolStack, (void **) &n1);
 		//create state 1
 		s1 = createState(states, numberStates, numberInputSymbols);
 
@@ -199,7 +194,7 @@ int evaluate(Stack * symbolStack, Stack * opStack, State *** states, int * numbe
 		//push NFA later
 		new->start = s1;
 		new->final = s2;
-		push(symbolStack, (void *) new);
+		stack_push(symbolStack, (void *) new);
 	} 
 
 
@@ -228,7 +223,7 @@ int pushInputSymbol(char c, Stack * symbolStack, InputSymbol * symbols, State **
 	n->final = s2;
 
 	//push NFA
-	push(symbolStack, n);
+	stack_push(symbolStack, n);
 
 	return 0;
 }
@@ -294,33 +289,4 @@ char * getInput()
 	str[lenstr + 1] = '\0';
 
 	return str;
-}
-
-int push(Stack *stack, void * ptr)
-{
-	stack->top = stack->top + 1;
-	stack->array = (void **) realloc(stack->array, (stack->top + 1) * sizeof(void *));
-	stack->array[stack->top] = ptr;
-	return 0;
-}
-
-void * pop(Stack *stack)
-{
-	if (stack->top > -1) {
-		void * ptr = stack->array[stack->top];
-		stack->array = (void **) realloc(stack->array, stack->top * sizeof(void *));
-		stack->top--;
-		return ptr;
-	} else {
-		return NULL;
-	}
-}
-
-void * peek(Stack *stack)
-{
-	if (stack->top > -1) {
-		return stack->array[stack->top];
-	} else {
-		return NULL;
-	}
 }
